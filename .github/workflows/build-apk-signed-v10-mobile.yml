@@ -1,0 +1,100 @@
+name: Build YB LOCUS Signed APK v1.0
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "YB_LOCUS_Android_v1.0_project.zip"
+      - ".github/workflows/build-apk-signed-v10-mobile.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract YB LOCUS project
+        run: |
+          rm -rf project
+          mkdir project
+          unzip -q YB_LOCUS_Android_v1.0_project.zip -d project
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Check JavaScript syntax
+        working-directory: project
+        run: |
+          node --check app/src/main/assets/bridge.js
+          node --check app/src/main/assets/investment_mobile.js
+
+      - name: Install Android SDK 36
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Set up Gradle 9.6
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.6.0'
+
+      - name: Build unsigned release APK
+        working-directory: project
+        run: gradle :app:assembleRelease --stacktrace --no-daemon
+
+      - name: Restore fixed signing key
+        env:
+          YBKEY: ${{ secrets.YBKEY }}
+        run: |
+          test -n "$YBKEY"
+          printf '%s' "$YBKEY" | base64 --decode > "$RUNNER_TEMP/yb-locus-release.jks"
+
+      - name: Align and sign APK
+        working-directory: project
+        env:
+          YBPASS: ${{ secrets.YBPASS }}
+        run: |
+          test -n "$YBPASS"
+
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -f -v 4 \
+            app/build/outputs/apk/release/app-release-unsigned.apk \
+            app/build/outputs/apk/release/YB-LOCUS-v1.0.apk
+
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" sign \
+            --ks "$RUNNER_TEMP/yb-locus-release.jks" \
+            --ks-key-alias yblocus \
+            --ks-pass env:YBPASS \
+            --key-pass env:YBPASS \
+            --out app/build/outputs/apk/release/YB-LOCUS-v1.0-signed.apk \
+            app/build/outputs/apk/release/YB-LOCUS-v1.0.apk
+
+      - name: Verify signed APK
+        working-directory: project
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs \
+            app/build/outputs/apk/release/YB-LOCUS-v1.0-signed.apk
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -v 4 \
+            app/build/outputs/apk/release/YB-LOCUS-v1.0-signed.apk
+
+      - name: Create checksum
+        working-directory: project
+        run: sha256sum app/build/outputs/apk/release/YB-LOCUS-v1.0-signed.apk > app/build/outputs/apk/release/YB-LOCUS-v1.0-signed.apk.sha256
+
+      - name: Upload signed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: YB-LOCUS-Android-v1.0-SIGNED
+          path: |
+            project/app/build/outputs/apk/release/YB-LOCUS-v1.0-signed.apk
+            project/app/build/outputs/apk/release/YB-LOCUS-v1.0-signed.apk.sha256
+          if-no-files-found: error
+          retention-days: 30
