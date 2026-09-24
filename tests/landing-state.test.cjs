@@ -5,20 +5,32 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
 const source = fs.readFileSync(path.join(__dirname, '../app/src/main/assets/investment_mobile.js'), 'utf8');
+const mainActivitySource = fs.readFileSync(
+  path.join(__dirname, '../app/src/main/java/com/yblocus/app/MainActivity.java'), 'utf8');
 
 function harness(options = {}) {
   const state = {native: 'PAGE_LOADING', pageId: 1, attempts: 0, clicks: 0, applies: 0,
     property: '상가, 사무실', trade: '매매, 월세', unit: '㎡', sheet: false,
     transitions: [], delays: [], ...options.initial};
-  const control = () => ({textContent: state.unit, closest: () => null,
-    getBoundingClientRect: () => ({left: 320, top: 250, bottom: 290, width: 40, height: 40}),
+  const control = (unit = state.unit, rect = {left: 320, top: 250, bottom: 290, right: 360, width: 40, height: 40}) => ({
+    textContent: unit, closest: () => null, contains: () => false,
+    getBoundingClientRect: () => rect,
     click: () => {state.clicks++; if (!options.ignoreUnitClick) state.unit = '㎡';}});
   const active = id => id === state.pageId && !['READY', 'FAILED'].includes(state.native);
   const context = vm.createContext({
     window: {__SANGA_BRIDGE_TOKEN__: 'test', __YBLOCUS_LANDING_PAGE__: 1},
     location: {hostname: 'new.land.naver.com', href: 'https://new.land.naver.com/offices'},
     document: {readyState: 'loading', documentElement: {}, addEventListener() {},
-      querySelectorAll: () => state.unit === null ? [] : options.ambiguousUnit ? [control(), control()] : [control()]},
+      querySelectorAll: () => {
+        if (state.unit === null) return [];
+        if (options.unitControls) return options.unitControls.map(c => control(c.unit, c.rect));
+        return options.ambiguousUnit
+          ? [
+              control(state.unit, {left: 250, top: 250, bottom: 290, right: 290, width: 40, height: 40}),
+              control(state.unit, {left: 340, top: 250, bottom: 290, right: 380, width: 40, height: 40})
+            ]
+          : [control()];
+      }, elementFromPoint: () => null},
     innerWidth: 400, innerHeight: 800,
     getComputedStyle: () => ({display: 'block', visibility: 'visible'}),
     MutationObserver: class {observe() {}},
@@ -52,6 +64,7 @@ function harness(options = {}) {
   // replace only external filter DOM interactions with deterministic fixture adapters.
   const hooks = `
     window.testLanding = {runInitialLanding, verifyLandingDefaults, ensureNaverPyeongDefault,
+      normalizeAreaUnitLabel, naverUnitControl,
       configure(readChip, readSheet, applyFilter){
         topChipByLabels = labels => ({textContent: readChip(labels === PROPERTY_LABELS ? 'property' : 'trade')});
         findSheetByHeading = () => readSheet();
@@ -80,6 +93,28 @@ test('only confirmed property + trade + pyeong reaches READY after two observati
   assert.deepEqual(state.delays, [250, 350, 350]);
 });
 
+for (const label of ['㎡', 'm²', 'm2', 'm ^ 2']) {
+  test(`unit switch label ${JSON.stringify(label)} means the current screen is pyeong`, async () => {
+    const {state, api} = harness({initial: {unit: label}});
+    assert.equal(api.normalizeAreaUnitLabel(label), 'SQM');
+    await api.runInitialLanding();
+    assert.equal(state.native, 'READY');
+    assert.equal(state.clicks, 0);
+  });
+}
+
+test('pyeong switch label is clicked and an SQM-family label then verifies READY', async () => {
+  const {state, api} = harness({
+    initial: {unit: '평'},
+    onDelay(ms, state) {
+      if (ms === 350 && state.clicks === 1) state.unit = 'm²';
+    }
+  });
+  await api.runInitialLanding();
+  assert.equal(state.native, 'READY');
+  assert.equal(state.clicks, 1);
+});
+
 for (const initial of [
   {property: '아파트, 재건축'}, {trade: '매매, 전세'},
   {property: '상가, 사무실, 아파트'}, {trade: '매매, 월세, 전세'},
@@ -104,10 +139,21 @@ test('click that did not change the unit is not success', async () => {
   assert.equal(state.clicks, 3);
 });
 
-test('ambiguous unit controls fail closed', async () => {
+test('multiple constrained unit controls choose the strongest right-side candidate', async () => {
   const {state, api} = harness({ambiguousUnit: true});
   await api.runInitialLanding();
-  assert.equal(state.native, 'FAILED');
+  assert.equal(state.native, 'READY');
+  assert.equal(state.clicks, 0);
+});
+
+test('terminal FAILED reveals WebView and analyzer without pretending to be READY', () => {
+  const failedBranch = mainActivitySource.match(
+    /else if \(landingState == LandingState\.FAILED\) \{([\s\S]*?)\n\s*\}/)?.[1] || '';
+  assert.match(failedBranch, /startupCover\.setVisibility\(View\.GONE\)/);
+  assert.match(failedBranch, /webView\.setImportantForAccessibility\(View\.IMPORTANT_FOR_ACCESSIBILITY_AUTO\)/);
+  assert.match(failedBranch, /analyzerButton\.setEnabled\(true\)/);
+  assert.match(failedBranch, /기본 필터 자동설정을 완료하지 못했습니다\. 상단 필터를 확인해 주세요\./);
+  assert.doesNotMatch(failedBranch, /landingState\s*=\s*LandingState\.READY/);
 });
 
 test('transient valid summary is rejected by the second verification', async () => {

@@ -236,7 +236,13 @@ public class MainActivity extends Activity {
             } else if (landingState == LandingState.FAILED) {
                 webView.removeCallbacks(landingTimeout);
                 startupProgress.setVisibility(View.GONE);
-                startupMessage.setText("초기 설정을 확인하지 못했습니다.\n앱을 다시 실행해 주세요.");
+                // 자동설정 실패는 terminal 상태로 유지하되 앱 사용 자체를 막지는 않는다.
+                startupCover.setVisibility(View.GONE);
+                webView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+                analyzerButton.setEnabled(true);
+                Toast.makeText(MainActivity.this,
+                        "기본 필터 자동설정을 완료하지 못했습니다. 상단 필터를 확인해 주세요.",
+                        Toast.LENGTH_LONG).show();
             }
         });
     }

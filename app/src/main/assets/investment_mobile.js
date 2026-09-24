@@ -112,23 +112,39 @@
     const cs=getComputedStyle(el);
     return r.width>0 && r.height>0 && r.bottom>0 && r.top<innerHeight && cs.display!=='none' && cs.visibility!=='hidden';
   }
+  function normalizeAreaUnitLabel(text){
+    const compact=String(text ?? '').normalize('NFKC').replace(/\s+/g,'').toLowerCase();
+    if(compact==='평') return 'PYEONG';
+    if(compact==='m2' || compact==='m^2') return 'SQM';
+    return null;
+  }
   function naverUnitControl(){
-    // 버튼은 전환할 단위를 표시한다: '평'이면 현재 ㎡, '㎡'이면 현재 평.
-    // 지도 우측의 실제 버튼을 유일하게 찾지 못하면 READY로 처리하지 않는다.
+    // 버튼은 전환할 단위를 표시한다: PYEONG이면 현재 SQM, SQM이면 현재 PYEONG.
+    // 기존 지도 우측 위치/크기 제약 안에서 실제 버튼에 가장 가까운 후보 하나를 고른다.
     const candidates=[...document.querySelectorAll('button,a,[role="button"]')]
       .filter(el=>!el.closest?.('#'+ID+',#'+LAUNCHER_ID+',#'+BACKDROP_ID))
-      .filter(el=>['평','㎡'].includes(exactText(el)) && visible(el))
+      .filter(el=>normalizeAreaUnitLabel(exactText(el)) && visible(el))
       .filter(el=>{
         const r=el.getBoundingClientRect();
         return r.width<=100 && r.height<=100 && r.left>innerWidth*0.55 && r.top>150;
-      });
-    return candidates.length===1 ? candidates[0] : null;
+      })
+      .map((el,index)=>{
+        const r=el.getBoundingClientRect();
+        const x=r.left+r.width/2, y=r.top+r.height/2;
+        const hit=document.elementFromPoint?.(x,y);
+        const topmost=!hit || hit===el || el.contains?.(hit) || hit.contains?.(el);
+        // 실제 우측 컨트롤은 화면 오른쪽에 가깝고 작으며, 같은 위치에서는 위에 노출된 요소를 우선한다.
+        const score=(topmost?0:10000)+Math.abs(innerWidth-r.right)*10+(r.width*r.height)+index/1000;
+        return {el,score};
+      })
+      .sort((a,b)=>a.score-b.score);
+    return candidates[0]?.el || null;
   }
   function ensureNaverPyeongDefault(){
     if(!landingActive()) return false;
     const control=naverUnitControl();
     if(!control) return false;
-    if(exactText(control)==='평') control.click();
+    if(normalizeAreaUnitLabel(exactText(control))==='PYEONG') control.click();
     return true; // 성공은 클릭 반환값이 아닌 verifyLandingDefaults에서 판정한다.
   }
 
@@ -423,10 +439,11 @@
     }catch(_e){ return false; }
   }
   function verifyLandingDefaults(){
+    const unitControl=naverUnitControl();
     return landingActive()
       && !findSheetByHeading('매물유형') && !findSheetByHeading('거래유형')
       && summaryMatches('property') && summaryMatches('trade')
-      && exactText(naverUnitControl())==='㎡';
+      && normalizeAreaUnitLabel(exactText(unitControl))==='SQM';
   }
   async function runInitialLanding(){
     if(landingStarted || !landingActive()) return;
