@@ -1,0 +1,139 @@
+#sanga-invest-launcher{position:fixed;right:14px;bottom:calc(118px + env(safe-area-inset-bottom,0px));z-index:2147483645;border:0;border-radius:999px;background:#111827;color:#fff;padding:15px 20px;font:800 17px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;box-shadow:0 6px 22px rgba(0,0,0,.28);letter-spacing:-.2px}
+#sanga-invest-launcher span{margin-right:3px}
+#sanga-invest-backdrop.sip-backdrop{position:fixed;inset:0;z-index:2147483643;background:rgba(15,23,42,.28)}
+#sanga-invest-backdrop.sip-hidden{display:none!important}
+html.sanga-invest-sheet-open{overflow:hidden!important}
+#sanga-invest-panel{position:fixed!important;left:0!important;right:0!important;top:auto!important;bottom:0!important;width:100%!important;max-width:none!important;max-height:84vh!important;margin:0!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;background:#fff!important;border:0!important;border-radius:18px 18px 0 0!important;box-shadow:0 -10px 34px rgba(0,0,0,.24)!important;z-index:2147483644!important;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif!important;color:#202124!important;font-size:15px!important;transition:none!important;padding-bottom:env(safe-area-inset-bottom,0px)!important;overscroll-behavior:contain!important}
+#sanga-invest-panel.sip-sheet-closed{display:none!important;pointer-events:none!important}
+#sanga-invest-panel *{box-sizing:border-box}
+#sanga-invest-panel .sip-head{position:sticky;top:0;background:#111827;color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;z-index:5;border-radius:18px 18px 0 0}
+#sanga-invest-panel .sip-title{font-weight:900;font-size:18px}.sip-sub{font-size:12px;opacity:.72;margin-top:2px}
+#sanga-invest-panel button{cursor:pointer;border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:10px 11px;font-size:14px;min-height:44px}
+#sanga-invest-panel .sip-head button{background:#111827;color:#fff;border-color:#64748b;min-height:40px;padding:7px 11px}
+#sanga-invest-panel .sip-body{padding:14px 14px 22px;overflow-y:auto!important;overflow-x:hidden!important;min-height:0!important;flex:1 1 auto!important;touch-action:pan-y!important;-webkit-overflow-scrolling:auto!important;overscroll-behavior-y:auto!important}.sip-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.sip-card{border:1px solid #e5e7eb;border-radius:10px;padding:8px;background:#fafafa}.sip-card b{display:block;font-size:13px;color:#475569;margin-bottom:3px}.sip-value{font-size:21px;font-weight:900;color:#111827}.sip-note{font-size:12px;color:#64748b;line-height:1.5;margin-top:3px}.sip-section{margin-top:11px;border-top:1px solid #e5e7eb;padding-top:10px}.sip-section-title{font-weight:900;font-size:15px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;gap:8px}.sip-row{display:flex;align-items:center;gap:6px;margin:6px 0}.sip-row label{width:82px;flex:0 0 82px;color:#475569}.sip-row input,.sip-row select{flex:1;min-width:0;border:1px solid #cbd5e1;border-radius:8px;padding:10px 9px;font-size:14px;background:#fff;min-height:46px}.sip-score{display:flex;align-items:center;gap:10px;border-radius:11px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0}.sip-score-num{font-size:34px;font-weight:950;line-height:1}.sip-score-text b{font-size:13px}.sip-score-text span{display:block;font-size:12px;color:#64748b;margin-top:2px;line-height:1.4}.sip-bar{height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:7px}.sip-bar>i{display:block;height:100%;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e);border-radius:999px}.sip-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:auto}.sip-table th,.sip-table td{border-bottom:1px solid #e5e7eb;padding:6px 3px;text-align:right;white-space:nowrap}.sip-table th:first-child,.sip-table td:first-child{text-align:left}.sip-muted{color:#94a3b8}.sip-warning{padding:8px 9px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;color:#9a3412;font-size:12px;line-height:1.5}.sip-actions{display:flex;gap:6px;margin-top:7px}.sip-actions button{flex:1}.sip-wide{grid-column:1/-1}.sip-kpi{font-weight:800}.sip-hidden{display:none!important}
+#sanga-invest-panel .sip-lowbox{margin-top:8px;border:1px solid #e5e7eb;border-radius:9px;padding:7px;background:#fff}
+#sanga-invest-panel .sip-lowtitle{font-weight:900;font-size:11px;margin-bottom:5px}
+#sanga-invest-panel .sip-lowtitle span{font-weight:400;color:#64748b;font-size:9px;margin-left:4px}
+#sanga-invest-panel .sip-lowlist{display:flex;flex-direction:column;gap:5px}
+#sanga-invest-panel button.sip-lowitem{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:left;background:#fafafa;border-color:#e5e7eb;padding:7px 8px}
+#sanga-invest-panel button.sip-lowitem b{font-size:11px;white-space:nowrap}
+#sanga-invest-panel button.sip-lowitem span{font-size:9.5px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sanga-invest-focus{outline:3px solid #f59e0b!important;outline-offset:2px!important;border-radius:4px!important}
+@media (min-width:700px){#sanga-invest-panel{left:auto!important;right:16px!important;bottom:16px!important;width:430px!important;max-height:88vh!important;border-radius:16px!important}#sanga-invest-panel .sip-head{border-radius:16px 16px 0 0}}
+.sanga-inline-unit{margin:3px 0 0 0!important;font:700 13px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif!important;color:#475569!important;opacity:.92!important;letter-spacing:-.15px!important;pointer-events:none!important}
+#sanga-invest-panel .sip-minirow{display:grid;grid-template-columns:1fr 58px 16px;align-items:center;gap:4px;border:1px solid #e5e7eb;border-radius:9px;padding:6px;background:#fafafa}
+#sanga-invest-panel .sip-minirow label{font-size:10px;color:#475569;white-space:nowrap}
+#sanga-invest-panel .sip-minirow input{width:100%;min-width:0;border:1px solid #cbd5e1;border-radius:7px;padding:6px;font-size:11px;background:#fff}
+#sanga-invest-panel .sip-minirow span{font-size:12px;color:#64748b}
+#sanga-invest-panel .sip-calc-two{margin:5px 0}
+
+/* v0.6 mobile readability */
+@media (max-width:699px){
+  #sanga-invest-launcher{right:12px!important;bottom:calc(118px + env(safe-area-inset-bottom,0px))!important;min-height:48px!important}
+  #sanga-invest-panel{max-height:92vh!important}
+  #sanga-invest-panel button{touch-action:manipulation!important}
+  .sanga-inline-unit{font-size:13px!important;line-height:1.45!important}
+}
+
+
+/* v0.7: Naver mobile layout must keep its native 100% text metrics. */
+html.sanga-type-sheet-open #sanga-invest-launcher{display:none!important}
+.sanga-hide-property-type{display:none!important}
+.sanga-property-sheet .sanga-keep-property-type{display:flex!important;visibility:visible!important;opacity:1!important}
+
+/* v0.8 Android scroll fix: only the body scrolls.
+   Keeping the fixed sheet itself non-scrollable avoids WebView's momentum/overscroll
+   hand-off that could consume the first reverse-direction swipe. */
+#sanga-invest-panel{
+  overflow:hidden!important;
+  display:flex!important;
+  flex-direction:column!important;
+  touch-action:none!important;
+}
+#sanga-invest-panel .sip-head{flex:0 0 auto!important}
+#sanga-invest-panel .sip-body{
+  flex:1 1 auto!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  touch-action:pan-y!important;
+  -webkit-overflow-scrolling:auto!important;
+  overscroll-behavior-y:auto!important;
+  contain:none!important;
+}
+@media (max-width:699px){
+  #sanga-invest-panel{height:min(88dvh,760px)!important;max-height:88dvh!important;font-size:16px!important}
+  #sanga-invest-panel .sip-head{padding:13px 14px!important}
+  #sanga-invest-panel .sip-title{font-size:18px!important}
+  #sanga-invest-panel .sip-body{padding:12px 12px calc(24px + env(safe-area-inset-bottom,0px))!important}
+  #sanga-invest-panel .sip-value{font-size:20px!important}
+  #sanga-invest-panel .sip-row label{width:88px!important;flex-basis:88px!important;font-size:14px!important}
+  #sanga-invest-panel .sip-row input,#sanga-invest-panel .sip-row select{font-size:16px!important}
+}
+
+
+/* v0.8: keep YB LOCUS away from Naver's bottom-center '매물' pill. */
+@media (max-width:699px){
+  #sanga-invest-launcher{
+    right:10px!important;
+    bottom:calc(118px + env(safe-area-inset-bottom,0px))!important;
+    padding:13px 16px!important;
+    font-size:16px!important;
+    min-height:46px!important;
+    max-width:132px!important;
+  }
+}
+
+
+/* v0.9: Android native action bar owns the analysis button; never overlay Naver controls. */
+@media (max-width:699px){
+  #sanga-invest-launcher{display:none!important}
+  html.sanga-invest-sheet-open,html.sanga-invest-sheet-open body{
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+  }
+  #sanga-invest-panel{
+    top:0!important;
+    bottom:0!important;
+    height:100%!important;
+    max-height:none!important;
+    border-radius:0!important;
+    overscroll-behavior:none!important;
+  }
+  #sanga-invest-panel .sip-head{
+    border-radius:0!important;
+    flex:0 0 auto!important;
+  }
+  #sanga-invest-panel .sip-body{
+    flex:1 1 0!important;
+    height:0!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior:none!important;
+    touch-action:none!important;
+    -webkit-overflow-scrolling:auto!important;
+    scroll-behavior:auto!important;
+    contain:layout style paint!important;
+  }
+}
+
+
+/* v1.4: unit selector + readable TOP3 cards. Property types stay fully selectable. */
+#sanga-invest-panel .sip-unit-tools{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+#sanga-invest-panel .sip-unit-tools select{border:1px solid #cbd5e1;border-radius:8px;background:#fff;padding:8px 7px;font-size:13px;min-height:44px;color:#111827}
+#sanga-invest-panel button.sip-lowitem{align-items:flex-start!important;flex-direction:column!important;justify-content:flex-start!important}
+#sanga-invest-panel button.sip-lowitem b{font-size:12px!important}
+#sanga-invest-panel button.sip-lowitem span{font-size:10.5px!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.45!important}
+.sanga-hide-property-type{display:revert!important}
+
+/* v2.3: exact weighting is kept internal; the UI shows only qualitative factor bars. */
+#sanga-invest-panel .sip-factorbox{margin:9px 2px 0;display:flex;flex-direction:column;gap:7px}
+#sanga-invest-panel .sip-factor{display:grid;grid-template-columns:92px 1fr;align-items:center;gap:8px}
+#sanga-invest-panel .sip-factor>span{font-size:11px;font-weight:800;color:#475569;white-space:nowrap}
+#sanga-invest-panel .sip-factor>b{display:block;height:8px;border-radius:999px;background:#e5e7eb;overflow:hidden}
+#sanga-invest-panel .sip-factor>b>i{display:block;width:0;height:100%;border-radius:999px;transition:width .18s ease;background:#94a3b8}
+#sanga-invest-panel .sip-factor>b>i.is-low{background:#ef4444}
+#sanga-invest-panel .sip-factor>b>i.is-mid{background:#f59e0b}
+#sanga-invest-panel .sip-factor>b>i.is-high{background:#22c55e}
+#sanga-invest-panel .sip-factor>b>i.is-neutral{background:#94a3b8}

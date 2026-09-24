@@ -1,0 +1,52 @@
+# Android / Gradle generated files and machine-specific configuration
+.gradle/
+.kotlin/
+**/build/
+local.properties
+.idea/
+*.iml
+.cxx/
+.externalNativeBuild/
+captures/
+*.apk
+*.aab
+*.apks
+*.hprof
+
+# Credentials, signing material, local overrides (never put secrets in assets)
+.env
+.env.*
+!.env.example
+!.env.template
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+key.properties
+keystore.properties
+signing.properties
+secrets.properties
+credentials.json
+service-account*.json
+google-services.json
+secrets/
+credentials/
+*.local.properties
+*.local.json
+
+# Local reports, exports and captured session data
+*.log
+logs/
+local-artifacts/
+session-dumps/
+exports/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*~
+*.swp
+
+# Keep future Gradle Wrapper reproducible; do not blanket-ignore *.jar.
