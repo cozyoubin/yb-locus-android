@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>YB LOCUS 경매분석</title>
+  <link rel="stylesheet" href="auction.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">YB LOCUS</div>
+    <div class="feature-name">경매분석</div>
+  </header>
+  <main>
+    <section class="intro-card">
+      <span class="phase-badge">PHASE 1</span>
+      <h1>경매 사건을 분석할 준비를 시작합니다</h1>
+      <p>현재는 구조 검증용 Fake Repository를 사용합니다. 법원 및 실거래 외부 API는 연결되지 않았습니다.</p>
+    </section>
+
+    <section class="lookup-card" aria-labelledby="lookup-title">
+      <h2 id="lookup-title">사건번호 조회</h2>
+      <form id="auction-form" novalidate>
+        <label for="case-number">사건번호</label>
+        <div class="input-row">
+          <input id="case-number" name="caseNumber" type="text" inputmode="text"
+                 autocomplete="off" placeholder="2025타경12345" aria-describedby="case-help">
+          <button type="submit">조회</button>
+        </div>
+        <p id="case-help" class="help">예: 2025타경12345</p>
+      </form>
+    </section>
+
+    <section class="result-card" aria-labelledby="result-title">
+      <h2 id="result-title">조회결과</h2>
+      <p id="lookup-status" class="status" aria-live="polite">사건번호를 입력해 주세요.</p>
+      <div id="lookup-result" hidden></div>
+    </section>
+  </main>
+  <script src="auction_domain.js"></script>
+  <script src="auction_app.js"></script>
+</body>
+</html>

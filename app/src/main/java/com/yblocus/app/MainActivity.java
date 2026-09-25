@@ -120,6 +120,23 @@ public class MainActivity extends Activity {
         LinearLayout.LayoutParams brandLp = new LinearLayout.LayoutParams(0, dp(44), 1f);
         actionBar.addView(brand, brandLp);
 
+        TextView auctionButton = new TextView(this);
+        auctionButton.setText("⚖  경매");
+        auctionButton.setTextColor(Color.rgb(17, 24, 39));
+        auctionButton.setTextSize(14);
+        auctionButton.setGravity(Gravity.CENTER);
+        auctionButton.setClickable(true);
+        auctionButton.setFocusable(true);
+        auctionButton.setPadding(dp(12), 0, dp(12), 0);
+        GradientDrawable auctionBg = new GradientDrawable();
+        auctionBg.setColor(Color.rgb(248, 220, 145));
+        auctionBg.setCornerRadius(dp(20));
+        auctionButton.setBackground(auctionBg);
+        LinearLayout.LayoutParams auctionLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, dp(40));
+        auctionLp.rightMargin = dp(8);
+        actionBar.addView(auctionButton, auctionLp);
+
         analyzerButton = new TextView(this);
         analyzerButton.setText("📊  분석");
         analyzerButton.setTextColor(Color.WHITE);
@@ -196,6 +213,9 @@ public class MainActivity extends Activity {
         shell.setPadding(0, topSafe, 0, bottomSafe);
 
         setContentView(shell);
+
+        auctionButton.setOnClickListener(v -> startActivity(
+                new Intent(MainActivity.this, AuctionAnalysisActivity.class)));
 
         analyzerButton.setOnClickListener(v -> webView.evaluateJavascript(
                 "(function(){if(window.YBLOCUS_OPEN_ANALYZER){window.YBLOCUS_OPEN_ANALYZER();return true;}return false;})()",
