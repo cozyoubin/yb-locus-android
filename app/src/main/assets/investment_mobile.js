@@ -418,13 +418,60 @@
 
   function summaryMatches(kind){
     const labels=kind==='property'?PROPERTY_LABELS:TRADE_LABELS;
+    const matchesExpected=text=>{
+      const selected=selectedLabelsFromSummary(text,labels);
+      if(kind==='property'){
+        return selected.length===2 && selected.includes('상가') && selected.includes('사무실');
+      }
+      return selected.length===2 && selected.includes('매매') && selected.includes('월세');
+    };
     const chip=topChipByLabels(labels);
-    if(!chip) return false;
-    const selected=selectedLabelsFromSummary(exactText(chip),labels);
-    if(kind==='property'){
-      return selected.length===2 && selected.includes('상가') && selected.includes('사무실');
-    }
-    return selected.length===2 && selected.includes('매매') && selected.includes('월세');
+    if(chip && matchesExpected(exactText(chip))) return true;
+
+    // 클릭 가능한 조상에는 다른 필터 문구가 함께 들어갈 수 있다. 검증에서는 화면 상단에
+    // 실제로 보이는 summary 자식 텍스트도 직접 확인하되 기존 상단 위치/크기 범위를 유지한다.
+    return [...document.querySelectorAll('button,[role="button"],a,div,span,p,strong')]
+      .filter(el=>!el.closest?.(`#${ID},#${LAUNCHER_ID},#${BACKDROP_ID}`))
+      .filter(visible)
+      .map(el=>({t:exactText(el),r:el.getBoundingClientRect()}))
+      .filter(({t,r})=>t && t.length<=45
+        && r.top>=55 && r.top<=205 && r.width>=55 && r.width<=innerWidth*0.82
+        && r.height>=20 && r.height<=90)
+      .filter(({r})=>kind==='trade' ? r.left<=innerWidth*0.52 : r.right>=innerWidth*0.30)
+      .some(({t})=>matchesExpected(t));
+  }
+
+  function visibleNaverUnitControl(){
+    const interactive=naverUnitControl();
+    if(interactive) return interactive;
+    // 검증 fallback: 네이버가 클릭 handler를 부모에 두고 실제 라벨을 div/span으로 렌더링하는 경우.
+    const candidates=[...document.querySelectorAll('div,span')]
+      .filter(el=>!el.closest?.('#'+ID+',#'+LAUNCHER_ID+',#'+BACKDROP_ID))
+      .filter(el=>normalizeAreaUnitLabel(exactText(el)) && visible(el))
+      .map((el,index)=>({el,index,r:el.getBoundingClientRect()}))
+      .filter(({r})=>r.width<=100 && r.height<=100 && r.left>innerWidth*0.55 && r.top>150)
+      .map(({el,index,r})=>({
+        el,
+        score:Math.abs(innerWidth-r.right)*10+(r.width*r.height)+index/1000
+      }))
+      .sort((a,b)=>a.score-b.score);
+    return candidates[0]?.el || null;
+  }
+
+  function landingVerificationResult(){
+    const propertyOk=summaryMatches('property');
+    const tradeOk=summaryMatches('trade');
+    const unitControl=visibleNaverUnitControl();
+    // 단위 버튼은 전환 대상을 표시하므로 SQM 라벨이 보일 때 현재 지도는 PYEONG이다.
+    const unitOk=normalizeAreaUnitLabel(exactText(unitControl))==='SQM';
+    const sheetsClosed=!findSheetByHeading('매물유형') && !findSheetByHeading('거래유형');
+    return {
+      propertyOk,
+      tradeOk,
+      unitOk,
+      sheetsClosed,
+      ready:propertyOk && tradeOk && unitOk && sheetsClosed
+    };
   }
 
   function landingActive(){
@@ -439,11 +486,8 @@
     }catch(_e){ return false; }
   }
   function verifyLandingDefaults(){
-    const unitControl=naverUnitControl();
-    return landingActive()
-      && !findSheetByHeading('매물유형') && !findSheetByHeading('거래유형')
-      && summaryMatches('property') && summaryMatches('trade')
-      && normalizeAreaUnitLabel(exactText(unitControl))==='SQM';
+    const result=landingVerificationResult();
+    return landingActive() && result.ready;
   }
   async function runInitialLanding(){
     if(landingStarted || !landingActive()) return;

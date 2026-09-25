@@ -16,20 +16,33 @@ function harness(options = {}) {
     textContent: unit, closest: () => null, contains: () => false,
     getBoundingClientRect: () => rect,
     click: () => {state.clicks++; if (!options.ignoreUnitClick) state.unit = '㎡';}});
+  const summary = (text, rect) => ({textContent: text, closest: () => null,
+    getBoundingClientRect: () => rect});
+  const visibleSummaries = () => [
+    summary(state.trade, {left: 20, top: 90, bottom: 130, right: 140, width: 120, height: 40}),
+    summary(state.property, {left: 150, top: 90, bottom: 130, right: 300, width: 150, height: 40})
+  ];
+  const unitControls = () => {
+    if (state.unit === null) return [];
+    if (options.unitControls) return options.unitControls.map(c => control(c.unit, c.rect));
+    if (options.ambiguousUnit) return [
+      control(state.unit, {left: 250, top: 250, bottom: 290, right: 290, width: 40, height: 40}),
+      control(state.unit, {left: 340, top: 250, bottom: 290, right: 380, width: 40, height: 40})
+    ];
+    return [control()];
+  };
   const active = id => id === state.pageId && !['READY', 'FAILED'].includes(state.native);
   const context = vm.createContext({
     window: {__SANGA_BRIDGE_TOKEN__: 'test', __YBLOCUS_LANDING_PAGE__: 1},
     location: {hostname: 'new.land.naver.com', href: 'https://new.land.naver.com/offices'},
     document: {readyState: 'loading', documentElement: {}, addEventListener() {},
-      querySelectorAll: () => {
-        if (state.unit === null) return [];
-        if (options.unitControls) return options.unitControls.map(c => control(c.unit, c.rect));
-        return options.ambiguousUnit
-          ? [
-              control(state.unit, {left: 250, top: 250, bottom: 290, right: 290, width: 40, height: 40}),
-              control(state.unit, {left: 340, top: 250, bottom: 290, right: 380, width: 40, height: 40})
-            ]
-          : [control()];
+      querySelectorAll: selector => {
+        if (selector === 'button,a,[role="button"]') return options.unitAsTextElement ? [] : unitControls();
+        if (selector === 'div,span') return options.unitAsTextElement ? unitControls() : [];
+        if (selector === 'button,[role="button"],a,div,span,p,strong') {
+          return options.visibleSummaryFallback ? visibleSummaries() : [];
+        }
+        return [];
       }, elementFromPoint: () => null},
     innerWidth: 400, innerHeight: 800,
     getComputedStyle: () => ({display: 'block', visibility: 'visible'}),
@@ -64,9 +77,9 @@ function harness(options = {}) {
   // replace only external filter DOM interactions with deterministic fixture adapters.
   const hooks = `
     window.testLanding = {runInitialLanding, verifyLandingDefaults, ensureNaverPyeongDefault,
-      normalizeAreaUnitLabel, naverUnitControl,
+      normalizeAreaUnitLabel, naverUnitControl, landingVerificationResult,
       configure(readChip, readSheet, applyFilter){
-        topChipByLabels = labels => ({textContent: readChip(labels === PROPERTY_LABELS ? 'property' : 'trade')});
+        topChipByLabels = labels => ({textContent: ${options.primarySummaryBroken ? "'필터 전체 문구'" : "readChip(labels === PROPERTY_LABELS ? 'property' : 'trade')"}});
         findSheetByHeading = () => readSheet();
         enforceFilterSelection = applyFilter;
         autoCollapseAccidentalSingleListing = () => false;
@@ -113,6 +126,48 @@ test('pyeong switch label is clicked and an SQM-family label then verifies READY
   await api.runInitialLanding();
   assert.equal(state.native, 'READY');
   assert.equal(state.clicks, 1);
+});
+
+test('visible top summaries and right-side m² text fallback reach READY without FAILED', async () => {
+  const {state, api} = harness({
+    initial: {property: '상가, 사무실', trade: '매매, 월세', unit: 'm²'},
+    primarySummaryBroken: true,
+    visibleSummaryFallback: true,
+    unitAsTextElement: true
+  });
+  const result = api.landingVerificationResult();
+  assert.deepEqual({...result}, {
+    propertyOk: true, tradeOk: true, unitOk: true, sheetsClosed: true, ready: true
+  });
+  await api.runInitialLanding();
+  assert.equal(state.native, 'READY');
+  assert.ok(!state.transitions.includes('FAILED'));
+});
+
+for (const [field, value, failedKey] of [
+  ['property', '아파트, 재건축', 'propertyOk'],
+  ['trade', '매매, 전세', 'tradeOk'],
+  ['unit', '평', 'unitOk']
+]) {
+  test(`visible verification rejects incorrect ${field}`, () => {
+    const {api} = harness({
+      initial: {property: '상가, 사무실', trade: '매매, 월세', unit: 'm²', [field]: value},
+      primarySummaryBroken: true,
+      visibleSummaryFallback: true,
+      unitAsTextElement: true,
+      ignoreUnitClick: true
+    });
+    const result = api.landingVerificationResult();
+    assert.equal(result[failedKey], false);
+    assert.equal(result.ready, false);
+  });
+}
+
+test('open filter sheet prevents READY and is reported separately', () => {
+  const {api} = harness({initial: {sheet: true}});
+  const result = api.landingVerificationResult();
+  assert.equal(result.sheetsClosed, false);
+  assert.equal(result.ready, false);
 });
 
 for (const initial of [
