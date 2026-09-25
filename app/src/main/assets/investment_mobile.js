@@ -458,13 +458,23 @@
     return candidates[0]?.el || null;
   }
 
+  function landingSheetOpenInViewport(heading){
+    const sheet=findSheetByHeading(heading);
+    if(!sheet) return false;
+    const r=sheet.getBoundingClientRect();
+    return r.width>0 && r.height>0
+      && r.right>0 && r.left<innerWidth
+      && r.bottom>0 && r.top<innerHeight;
+  }
+
   function landingVerificationResult(){
     const propertyOk=summaryMatches('property');
     const tradeOk=summaryMatches('trade');
     const unitControl=visibleNaverUnitControl();
     // 단위 버튼은 전환 대상을 표시하므로 SQM 라벨이 보일 때 현재 지도는 PYEONG이다.
     const unitOk=normalizeAreaUnitLabel(exactText(unitControl))==='SQM';
-    const sheetsClosed=!findSheetByHeading('매물유형') && !findSheetByHeading('거래유형');
+    const sheetsClosed=!landingSheetOpenInViewport('매물유형')
+      && !landingSheetOpenInViewport('거래유형');
     return {
       propertyOk,
       tradeOk,

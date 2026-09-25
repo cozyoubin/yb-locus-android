@@ -31,6 +31,8 @@ function harness(options = {}) {
     ];
     return [control()];
   };
+  const sheet = () => ({getBoundingClientRect: () => options.sheetRect ||
+    {left: 0, top: 80, right: 400, bottom: 760, width: 400, height: 680}});
   const active = id => id === state.pageId && !['READY', 'FAILED'].includes(state.native);
   const context = vm.createContext({
     window: {__SANGA_BRIDGE_TOKEN__: 'test', __YBLOCUS_LANDING_PAGE__: 1},
@@ -88,7 +90,7 @@ function harness(options = {}) {
   const end = source.lastIndexOf('})();');
   vm.runInContext(source.slice(0, end) + hooks + source.slice(end), context);
   const api = context.window.testLanding;
-  api.configure(kind => state[kind], () => state.sheet, async kind => {
+  api.configure(kind => state[kind], () => state.sheet ? sheet() : null, async kind => {
     state.applies++;
     options.onApply?.(kind, state);
     return true;
@@ -163,7 +165,17 @@ for (const [field, value, failedKey] of [
   });
 }
 
-test('open filter sheet prevents READY and is reported separately', () => {
+test('sheet DOM fully outside the horizontal viewport is treated as closed for READY', () => {
+  const {api} = harness({
+    initial: {sheet: true},
+    sheetRect: {left: 420, top: 80, right: 820, bottom: 760, width: 400, height: 680}
+  });
+  const result = api.landingVerificationResult();
+  assert.equal(result.sheetsClosed, true);
+  assert.equal(result.ready, true);
+});
+
+test('open filter sheet inside the viewport prevents READY', () => {
   const {api} = harness({initial: {sheet: true}});
   const result = api.landingVerificationResult();
   assert.equal(result.sheetsClosed, false);
